@@ -7,8 +7,11 @@ def main():
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=True)
         page = browser.new_page()
+        # Disabling images and other media
+        page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "stylesheet",
+                                                                                          "font"] else route.continue_())
         page.goto('https://books.toscrape.com/')
-        page.wait_for_timeout(5000)
+        page.wait_for_load_state('networkidle')
         src = page.content()
         soup = BeautifulSoup(src, 'lxml')
         links = ['https://books.toscrape.com/' + x['href'] for x in soup.select('h3 > a')]
@@ -16,7 +19,7 @@ def main():
         for link in links:
             #print(link)
             page.goto(link)
-            page.wait_for_timeout(2000)
+            page.wait_for_load_state('networkidle')
             src = page.content()
             soup = BeautifulSoup(src, 'lxml')
 
