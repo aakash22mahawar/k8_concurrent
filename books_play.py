@@ -4,7 +4,6 @@ from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 from connection import create_connection, close_connection
 
-
 async def scrape_book_details(page, link, cursor, connection):
     """Scrape the details of a book given its link and insert into DB."""
     try:
@@ -56,8 +55,8 @@ async def scrape_books_from_pages(page, start_page, end_page, cursor, connection
         await asyncio.sleep(2)
 
 
-async def run(playwright):
-    browser = await playwright.firefox.launch(headless=True)
+async def scrape_with_browser(playwright, start_page, end_page):
+    browser = await playwright.firefox.launch(headless=True, args=["--no-sandbox", "--disable-gpu"])
     connection = create_connection()
     if connection:
         try:
@@ -68,12 +67,27 @@ async def run(playwright):
                              lambda route: asyncio.create_task(route.abort()) if route.request.resource_type in [
                                  "image", "stylesheet", "font"] else asyncio.create_task(route.continue_()))
 
-            # Scrape books from page 1 to page 10
-            await scrape_books_from_pages(page, 1, 10, cursor, connection)
+            # Scrape books from the specified range of pages
+            await scrape_books_from_pages(page, start_page, end_page, cursor, connection)
 
         finally:
             close_connection(connection)
             await browser.close()
+
+
+async def run(playwright):
+    # Number of concurrent browsers
+    num_browsers = 5
+    total_pages = 10
+    pages_per_browser = total_pages // num_browsers
+
+    tasks = []
+    for i in range(num_browsers):
+        start_page = i * pages_per_browser + 1
+        end_page = (i + 1) * pages_per_browser if i < num_browsers - 1 else total_pages
+        tasks.append(scrape_with_browser(playwright, start_page, end_page))
+
+    await asyncio.gather(*tasks)
 
 
 async def main():
