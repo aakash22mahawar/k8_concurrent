@@ -2,7 +2,7 @@ import time
 import asyncio
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
-
+from connection import create_connection, close_connection
 
 async def scrape_book_details(page, link):
     """Scrape the details of a book given its link."""
@@ -24,14 +24,30 @@ async def scrape_book_details(page, link):
         print(f"Error scraping {link}: {e}")
         return None
 
+def insert_into_db(book_details):
+    """Insert scraped book details into MySQL database."""
+    connection = create_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            insert_query = """
+                INSERT INTO books (name, price, upc) 
+                VALUES (%s, %s, %s)
+            """
+            for book in book_details:
+                cursor.execute(insert_query, (book['name'], book['price'], book['upc']))
+                print("Data inserted successfully into table books")
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            close_connection(connection)
 
 async def run(playwright):
     browser = await playwright.firefox.launch(headless=True)
     try:
         page = await browser.new_page()
         # Disabling images and other media
-        await page.route("**/*", lambda route: asyncio.create_task(route.abort())
-        if route.request.resource_type in ["image", "stylesheet", "font"] else asyncio.create_task(route.continue_()))
+        await page.route("**/*", lambda route: asyncio.create_task(route.abort()) if route.request.resource_type in ["image", "stylesheet", "font"] else asyncio.create_task(route.continue_()))
         # Navigate to the main page
         url = 'https://books.toscrape.com/'
         await page.goto(url)
@@ -55,14 +71,15 @@ async def run(playwright):
         for book in book_details:
             print(book)
 
+        # Insert the scraped data into the database
+        insert_into_db(book_details)
+
     finally:
         await browser.close()
-
 
 async def main():
     async with async_playwright() as playwright:
         await run(playwright)
-
 
 if __name__ == '__main__':
     start = time.time()
