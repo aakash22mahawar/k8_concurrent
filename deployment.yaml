@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books-play-k8-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: books-play-k8
+  template:
+    metadata:
+      labels:
+        app: books-play-k8
+    spec:
+      containers:
+      - name: books-play-k8
+        image: aakash22mahawar/books_k8:latest
+        env:
+        - name: MYSQL_HOST
+          value: "mysql" # Kubernetes service name for MySQL
+        - name: MYSQL_USER
+          value: "root"
+        - name: MYSQL_PASSWORD
+          value: "analytics22"
+        - name: MYSQL_DATABASE
+          value: "k8"
+        ports:
+        - containerPort: 5000
+        command: [ "wait-for-it", "mysql:3306", "--timeout=20", "--", "python", "/app/src/books_play.py" ]
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+

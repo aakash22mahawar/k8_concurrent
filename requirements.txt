@@ -1,0 +1,4 @@
+beautifulsoup4==4.12.3
+mysql-connector-python==9.0.0
+playwright==1.46.0
+lxml==4.9.3

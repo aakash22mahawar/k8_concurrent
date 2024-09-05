@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  books_play_k8:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: books_k8:latest  # Custom name for your image
+    container_name: k8_container
+    environment:
+      MYSQL_HOST: 192.168.20.179 # Make sure this IP is correct
+      MYSQL_USER: root
+      MYSQL_PASSWORD: analytics22
+      MYSQL_DATABASE: k8
+    networks:
+      - k8_mysql_local
+    command: ["wait-for-it", "mysql:3306", "--timeout=20", "--", "python", "/app/src/books_play.py"]
+    ports:
+      - "5000:5000"  # Example port mapping if your app runs on port 5000
+
+networks:
+  k8_mysql_local:
