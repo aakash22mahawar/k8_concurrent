@@ -28,10 +28,11 @@ spec:
         - containerPort: 5000
         command: [ "wait-for-it", "mysql:3306", "--timeout=20", "--", "python", "/app/src/books_play.py" ]
         resources:
-          limits:
-            memory: "1Gi"
-            cpu: "1"
           requests:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "4Gi"   # Increase to 4 GB
+            cpu: "4"        # Increase to 4 full cores
+          limits:
+            memory: "4Gi"   # Increase to 4 GB
+            cpu: "4"        # Increase to 4 full cores
+
 

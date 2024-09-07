@@ -62,7 +62,7 @@ class BookPlay:
 
 if __name__ == '__main__':
     start = time.time()
-    scraper = BookPlay(num_browsers=8, total_pages=20, max_concurrent_browsers=5)
+    scraper = BookPlay(num_browsers=10, total_pages=20, max_concurrent_browsers=8)
     asyncio.run(scraper.main())
     end = time.time()
     print(round((end - start), 4), '****Time in Seconds****')
