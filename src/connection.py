@@ -8,7 +8,7 @@ def create_connection():
         connection = mysql.connector.connect(
             host='mysql',  # Kubernetes service name
             user='root',           # MySQL username
-            password='analytics22',  # MySQL password
+            password='your_password',  # MySQL password
             database='k8',        # MySQL database name
             autocommit=True       # Enable autocommit
         )
