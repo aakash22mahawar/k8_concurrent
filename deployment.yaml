@@ -21,7 +21,7 @@ spec:
         - name: MYSQL_USER
           value: "root"
         - name: MYSQL_PASSWORD
-          value: "analytics22"
+          value: "your_password"
         - name: MYSQL_DATABASE
           value: "k8"
         ports:
